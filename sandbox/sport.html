@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sport Profile — Dub Profile</title>
+  <meta name="description" content="A sport-specific Dub Profile — stats, highlights, level, and availability." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="sport">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand" aria-label="Dub Profile home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" width="34" height="34"><rect width="36" height="36" rx="10" fill="url(#g)"/><path d="M7 11l3.2 14 3.6-9.4L17.4 25 20.6 11" fill="none" stroke="#07090f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="27.5" cy="13" r="2.4" fill="#07090f"/><defs><linearGradient id="g" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#ccff00"/><stop offset="1" stop-color="#9fd000"/></linearGradient></defs></svg></span>
+        <span class="brand-name">DUB<b>PROFILE</b></span>
+      </a>
+      <nav class="main-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+        <ul id="nav-menu" class="nav-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="discover.html">Coach view</a></li>
+          <li class="nav-cta-group"><a href="#" class="btn btn-ghost btn-sm">Log in</a><a href="index.html#start" class="btn btn-primary btn-sm">Start free</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="container">
+      <nav class="subnav" aria-label="Breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="crumb-sep">/</span>
+        <a data-back-link href="athlete.html">← Back to master profile</a>
+        <span class="crumb-sep">/</span>
+        <span data-crumb>Sport</span>
+      </nav>
+    </div>
+    <div class="container" id="sport-root"></div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-bottom" style="border:0;margin:0;padding-top:0;">
+      <p>&copy; <span data-year>2026</span> Dub Profile</p>
+      <a data-back-link href="athlete.html" class="footer-social"><span>← Back to master profile</span></a>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <button class="modal-close" data-close aria-label="Close">×</button>
+      <h3 id="modal-title">Reach out</h3>
+      <p data-modal-sub>Send a note to this athlete's parent. They approve every connection.</p>
+      <label for="m-from">Your name / club</label>
+      <input class="field" id="m-from" placeholder="Coach Rivera · Austin Thunder 14U" />
+      <label for="m-msg">Message</label>
+      <textarea class="field" id="m-msg" placeholder="Loved the highlight reel — we'd love to invite you to a tryout…"></textarea>
+      <div style="margin-top:20px;display:flex;gap:10px;">
+        <button class="btn btn-outline" data-close>Cancel</button>
+        <button class="btn btn-primary" style="flex:1" data-send>Send request</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
