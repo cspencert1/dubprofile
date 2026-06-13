@@ -629,6 +629,31 @@ textarea.field { resize: vertical; min-height: 90px; }
   body { font-size: 16px; }
 }
 
+/* ============================================================
+   PROFILE BUILDER (create.html)
+   ============================================================ */
+.builder { max-width: 840px; margin: 10px auto 90px; }
+.builder h1 { font-family: var(--display); font-size: clamp(34px,5.5vw,58px); text-transform: uppercase; line-height: .92; }
+.builder .hint { color: var(--muted); margin: 12px 0 0; }
+.builder-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 26px; margin-top: 22px; }
+.builder-card > h2 { font-family: var(--head); font-weight: 800; font-size: 20px; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 6px; }
+.builder-card > .sub { color: var(--muted); font-size: 14.5px; margin: 0 0 6px; }
+.builder label { display: block; font-family: var(--head); font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 16px 0 7px; }
+.builder .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.builder .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.builder select.field { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) center, calc(100% - 13px) center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+.builder .checkbox { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-family: var(--head); font-weight: 700; color: var(--ink); cursor: pointer; }
+.builder .checkbox input { width: 18px; height: 18px; accent-color: var(--volt); }
+.sport-block { border: 1px solid var(--line-2); border-radius: 14px; padding: 22px; margin-top: 16px; position: relative; background: var(--bg-2); }
+.sport-block .sb-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sport-block .sb-head h3 { font-family: var(--head); font-weight: 800; text-transform: uppercase; font-size: 15px; letter-spacing: .5px; color: var(--volt); margin: 0; }
+.sport-block .remove { background: none; border: 1px solid var(--line-2); color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 700; border-radius: 8px; padding: 6px 11px; }
+.sport-block .remove:hover { border-color: var(--magenta); color: var(--magenta); }
+.builder-actions { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; align-items: center; }
+.builder-saved { display: none; background: rgba(204,255,0,.1); border: 1px solid rgba(204,255,0,.4); color: var(--volt); border-radius: 12px; padding: 16px 18px; margin-top: 20px; font-weight: 700; }
+.builder-saved.show { display: block; }
+@media (max-width: 680px) { .builder .grid2, .builder .grid3 { grid-template-columns: 1fr; } }
+
 /* ===== SANDBOX badge — only on the test copy ===== */
 body::before {
   content: "⚙ SANDBOX · TEST VERSION";

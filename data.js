@@ -233,8 +233,53 @@ const ATHLETES = [
   },
 ];
 
+// Stat fields offered in the profile builder, per sport.
+const STAT_FIELDS = {
+  baseball: [
+    { k: 'Height', ph: `5'7"` }, { k: 'Weight', ph: '128' }, { k: 'Bats / Throws', ph: 'R / R' },
+    { k: 'Exit Velo', ph: '78', accent: true }, { k: '60 Yard', ph: '7.9s', accent: true }, { k: 'Batting Avg', ph: '.412', accent: true },
+  ],
+  basketball: [
+    { k: 'Height', ph: `5'9"` }, { k: 'Wingspan', ph: `5'11"` }, { k: 'Vertical', ph: '24"', accent: true },
+    { k: 'PPG', ph: '14.2', accent: true }, { k: 'APG', ph: '6.1' }, { k: 'Position', ph: 'PG' },
+  ],
+  soccer: [
+    { k: 'Height', ph: `5'6"` }, { k: '40 Yard', ph: '5.4s', accent: true }, { k: 'Pref. Foot', ph: 'Right' },
+    { k: 'Goals', ph: '12', accent: true }, { k: 'Assists', ph: '7' }, { k: 'Position', ph: 'FWD' },
+  ],
+  football: [
+    { k: 'Height', ph: `6'1"` }, { k: 'Weight', ph: '175' }, { k: '40 Yard', ph: '4.8s', accent: true },
+    { k: 'Bench', ph: '185' }, { k: 'Pass Yds', ph: '2.4K', accent: true }, { k: 'TD : INT', ph: '24 : 5', accent: true },
+  ],
+  volleyball: [
+    { k: 'Height', ph: `5'9"` }, { k: 'Approach Touch', ph: `9'2"`, accent: true }, { k: 'Vertical', ph: '24"', accent: true },
+    { k: 'Reach', ph: `7'4"` }, { k: 'Kills / Set', ph: '3.4', accent: true }, { k: 'Position', ph: 'OH' },
+  ],
+  hockey: [
+    { k: 'Height', ph: `5'8"` }, { k: 'Weight', ph: '150' }, { k: 'Shot', ph: 'Left' },
+    { k: 'Position', ph: 'C' }, { k: 'Goals', ph: '18', accent: true }, { k: 'Assists', ph: '22', accent: true },
+  ],
+};
+
 // ---- helpers shared across pages ----
+const MY_KEY = 'dubprofile:me';
+
+function loadMyAthlete() {
+  try { return JSON.parse(localStorage.getItem(MY_KEY)); } catch (e) { return null; }
+}
+function saveMyAthlete(obj) {
+  localStorage.setItem(MY_KEY, JSON.stringify(obj));
+}
+
 function getAthlete(id) {
+  if (id === 'me') {
+    const mine = loadMyAthlete();
+    if (mine) return mine;
+  }
+  if (!id) {
+    const mine = loadMyAthlete();
+    if (mine) return mine;
+  }
   return ATHLETES.find(a => a.id === id) || ATHLETES[0];
 }
 function qp(name) {

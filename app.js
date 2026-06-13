@@ -130,7 +130,9 @@
             <p style="color:var(--muted);margin:14px 0 0;max-width:40em">${esc(a.tagline)}</p>
           </div>
           <div class="profile-id-actions">
-            <button class="btn btn-primary" data-reach="${esc(a.first)} ${esc(a.last)}">Reach out</button>
+            ${a.id === 'me'
+              ? `<a class="btn btn-primary" href="create.html">Edit profile</a>`
+              : `<button class="btn btn-primary" data-reach="${esc(a.first)} ${esc(a.last)}">Reach out</button>`}
             <button class="btn btn-outline" data-share>Share</button>
           </div>
         </div>
@@ -154,7 +156,7 @@
     observeReveals(root);
     wireReach(root);
     const add = $('[data-add-sport]', root);
-    if (add) add.addEventListener('click', () => toast('In the full app, this opens the “add a sport” flow.'));
+    if (add) add.addEventListener('click', () => { location.href = 'create.html'; });
     const share = $('[data-share]', root);
     if (share) share.addEventListener('click', () => toast('Profile link copied to clipboard ✓'));
   }
@@ -181,9 +183,9 @@
     const tiers = (cfg.tiers || []).map(t => `<span class="tier ${t === sp.tier ? 'on' : ''}">${esc(t)}</span>`).join('');
 
     const videos = sp.videos.length ? sp.videos.map((v, i) => `
-      <button class="reel-item" data-video style="background:linear-gradient(150deg, hsl(${(i*70+200)%360} 60% 22%), #0c0f18)">
+      <button class="reel-item" data-video data-url="${esc(v.url || '')}" style="background:linear-gradient(150deg, hsl(${(i*70+200)%360} 60% 22%), #0c0f18)">
         <span class="play"><span class="tri"></span></span>
-        <span class="cap">${esc(v.cap)}</span><span class="dur">${esc(v.dur)}</span>
+        <span class="cap">${esc(v.cap)}</span>${v.dur ? `<span class="dur">${esc(v.dur)}</span>` : ''}
       </button>`).join('')
       : `<p style="color:var(--muted);grid-column:1/-1;margin:0">No highlight videos added yet.</p>`;
 
@@ -253,7 +255,11 @@
 
     observeReveals(root);
     wireReach(root);
-    $$('[data-video]', root).forEach(v => v.addEventListener('click', () => toast('In the full app, this opens the linked video (YouTube / Hudl / Vimeo).')));
+    $$('[data-video]', root).forEach(v => v.addEventListener('click', () => {
+      const url = v.dataset.url;
+      if (url) window.open(url, '_blank', 'noopener');
+      else toast('Add a video link to this clip in the profile builder.');
+    }));
   }
 
   /* ============================================================
@@ -263,9 +269,12 @@
     const grid = $('#recruit-grid');
     if (!grid) return;
 
-    // flatten athletes into per-sport recruit rows
+    // flatten athletes into per-sport recruit rows.
+    // Include the parent's own created profile (if any) so they see it appear here.
+    const mine = loadMyAthlete();
+    const roster = mine ? [mine, ...ATHLETES] : ATHLETES.slice();
     const ROWS = [];
-    ATHLETES.forEach(a => {
+    roster.forEach(a => {
       Object.keys(a.sports).forEach(key => {
         const sp = a.sports[key];
         ROWS.push({
@@ -393,9 +402,219 @@
     $$('[data-reach]', root).forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.reach)));
   }
 
+  /* ============================================================
+     PAGE: PROFILE BUILDER (create.html)
+     Saves to the browser (localStorage). No server required.
+     ============================================================ */
+  function renderBuilder() {
+    const root = $('#builder-root');
+    if (!root) return;
+
+    const existing = loadMyAthlete();
+    const sportOptions = Object.keys(SPORTS)
+      .map(k => `<option value="${k}">${SPORTS[k].emoji} ${SPORTS[k].name}</option>`).join('');
+
+    root.innerHTML = `
+      <h1>${existing ? 'Edit your' : 'Build your'} athlete's profile</h1>
+      <p class="hint">Fill this in and hit save — your athlete's profile comes to life instantly. You can come back and edit it anytime.</p>
+
+      <div class="builder-card">
+        <h2>The basics</h2>
+        <div class="grid2">
+          <div><label for="b-first">First name</label><input class="field" id="b-first" placeholder="Jayden" /></div>
+          <div><label for="b-last">Last name</label><input class="field" id="b-last" placeholder="Cole" /></div>
+        </div>
+        <div class="grid3">
+          <div><label for="b-age">Age</label><input class="field" id="b-age" type="number" min="4" max="19" placeholder="13" /></div>
+          <div><label for="b-grad">Class of (grad year)</label><input class="field" id="b-grad" placeholder="2031" /></div>
+          <div><label for="b-state">State</label><input class="field" id="b-state" placeholder="TX" /></div>
+        </div>
+        <div class="grid2">
+          <div><label for="b-city">City</label><input class="field" id="b-city" placeholder="Austin" /></div>
+          <div><label for="b-init">Initials (for the badge)</label><input class="field" id="b-init" maxlength="3" placeholder="JC" /></div>
+        </div>
+        <label for="b-tagline">One-line bio</label>
+        <input class="field" id="b-tagline" placeholder="Two-way player. Lives for the big moment." />
+      </div>
+
+      <div class="builder-card">
+        <h2>Sports</h2>
+        <p class="sub">Add every sport your athlete plays — or wants to try. Each one gets its own page.</p>
+        <div id="sports-list"></div>
+        <div class="builder-actions">
+          <button class="btn btn-ghost" id="add-sport" type="button">+ Add a sport</button>
+        </div>
+      </div>
+
+      <div class="builder-actions">
+        <button class="btn btn-primary btn-lg" id="save-profile" type="button">Save profile</button>
+        <a class="btn btn-outline" href="athlete.html?id=me">View my profile</a>
+      </div>
+      <div class="builder-saved" id="saved-msg">Saved! Taking you to the profile…</div>
+    `;
+
+    const list = $('#sports-list', root);
+
+    function sportBlock(prefill) {
+      const wrap = document.createElement('div');
+      wrap.className = 'sport-block';
+      wrap.innerHTML = `
+        <div class="sb-head"><h3>Sport</h3><button type="button" class="remove">Remove</button></div>
+        <div class="grid2">
+          <div><label>Sport</label><select class="field b-sport">${sportOptions}</select></div>
+          <div><label>Position</label><input class="field b-pos" placeholder="Shortstop / Pitcher" /></div>
+        </div>
+        <div class="grid3">
+          <div><label>Skill level</label><select class="field b-level"><option>Beginner</option><option selected>Intermediate</option><option>Advanced</option></select></div>
+          <div><label>Tier</label><select class="field b-tier"></select></div>
+          <div><label>Recruiting status</label><select class="field b-status">
+            <option value="open">Open to Offers</option>
+            <option value="radar" selected>On the Radar</option>
+            <option value="locked">Locked In</option>
+          </select></div>
+        </div>
+        <label class="checkbox"><input type="checkbox" class="b-fav" /> This is a top sport for them</label>
+
+        <label style="margin-top:20px">Key stats</label>
+        <div class="grid3 b-stats"></div>
+
+        <div class="grid3" style="margin-top:6px">
+          <div><label>Practice days</label><input class="field b-days" placeholder="Mon · Wed · Fri" /></div>
+          <div><label>Practice time</label><input class="field b-time" placeholder="5:30–7:30 PM" /></div>
+          <div><label>Training appetite</label><select class="field b-want">
+            <option value="1">Prefers lighter load</option>
+            <option value="2" selected>Happy with the load</option>
+            <option value="3">Wants more reps</option>
+          </select></div>
+        </div>
+
+        <label style="margin-top:20px">Highlight videos (paste a YouTube / Hudl / Vimeo link)</label>
+        <div class="grid2"><input class="field b-vcap1" placeholder="Clip title — e.g. Walk-off triple" /><input class="field b-vurl1" placeholder="https://youtube.com/..." /></div>
+        <div class="grid2" style="margin-top:10px"><input class="field b-vcap2" placeholder="Clip title (optional)" /><input class="field b-vurl2" placeholder="https://..." /></div>
+      `;
+
+      const sportSel = $('.b-sport', wrap);
+      const tierSel = $('.b-tier', wrap);
+      const statsWrap = $('.b-stats', wrap);
+
+      function syncSport() {
+        const key = sportSel.value;
+        tierSel.innerHTML = (SPORTS[key].tiers || []).map(t => `<option>${t}</option>`).join('');
+        statsWrap.innerHTML = (STAT_FIELDS[key] || []).map((f, i) =>
+          `<div><label style="margin-top:0">${esc(f.k)}</label><input class="field b-stat" data-key="${esc(f.k)}" data-accent="${f.accent ? 1 : 0}" placeholder="${esc(f.ph)}" /></div>`
+        ).join('');
+      }
+      sportSel.addEventListener('change', syncSport);
+      $('.remove', wrap).addEventListener('click', () => wrap.remove());
+
+      syncSport();
+
+      // prefill an existing sport
+      if (prefill) {
+        sportSel.value = prefill.key;
+        syncSport();
+        $('.b-pos', wrap).value = prefill.position || '';
+        $('.b-level', wrap).value = prefill.level || 'Intermediate';
+        $('.b-tier', wrap).value = prefill.tier || tierSel.value;
+        $('.b-status', wrap).value = prefill.status || 'radar';
+        $('.b-fav', wrap).checked = !!prefill.favorite;
+        $('.b-days', wrap).value = (prefill.practice && prefill.practice.days) || '';
+        $('.b-time', wrap).value = (prefill.practice && prefill.practice.time) || '';
+        $('.b-want', wrap).value = String((prefill.practice && prefill.practice.want) || 2);
+        (prefill.stats || []).forEach(s => {
+          const inp = $$('.b-stat', wrap).find(x => x.dataset.key === s.k);
+          if (inp) inp.value = s.v;
+        });
+        if (prefill.videos && prefill.videos[0]) { $('.b-vcap1', wrap).value = prefill.videos[0].cap || ''; $('.b-vurl1', wrap).value = prefill.videos[0].url || ''; }
+        if (prefill.videos && prefill.videos[1]) { $('.b-vcap2', wrap).value = prefill.videos[1].cap || ''; $('.b-vurl2', wrap).value = prefill.videos[1].url || ''; }
+      }
+
+      list.appendChild(wrap);
+      return wrap;
+    }
+
+    function readBlock(wrap) {
+      const key = $('.b-sport', wrap).value;
+      const videos = [];
+      [['1'], ['2']].forEach(([n]) => {
+        const cap = $('.b-vcap' + n, wrap).value.trim();
+        const url = $('.b-vurl' + n, wrap).value.trim();
+        if (cap || url) videos.push({ cap: cap || 'Highlight', url, dur: '' });
+      });
+      const stats = $$('.b-stat', wrap)
+        .map(inp => ({ k: inp.dataset.key, v: inp.value.trim(), accent: inp.dataset.accent === '1' }))
+        .filter(s => s.v);
+      return {
+        key,
+        data: {
+          position: $('.b-pos', wrap).value.trim() || '—',
+          level: $('.b-level', wrap).value,
+          tier: $('.b-tier', wrap).value,
+          status: $('.b-status', wrap).value,
+          favorite: $('.b-fav', wrap).checked,
+          stats,
+          practice: { days: $('.b-days', wrap).value.trim() || 'TBD', time: $('.b-time', wrap).value.trim() || 'TBD', want: +$('.b-want', wrap).value },
+          videos,
+          photos: 0,
+        },
+      };
+    }
+
+    // seed blocks (existing profile, or one empty starter)
+    if (existing && existing.sports && Object.keys(existing.sports).length) {
+      Object.keys(existing.sports).forEach(k => sportBlock(Object.assign({ key: k }, existing.sports[k])));
+      // prefill basics
+      $('#b-first', root).value = existing.first || '';
+      $('#b-last', root).value = existing.last || '';
+      $('#b-age', root).value = existing.age || '';
+      $('#b-grad', root).value = existing.grad || '';
+      $('#b-state', root).value = existing.state || '';
+      $('#b-city', root).value = existing.city || '';
+      $('#b-init', root).value = existing.initials || '';
+      $('#b-tagline', root).value = existing.tagline || '';
+    } else {
+      sportBlock(null);
+    }
+
+    $('#add-sport', root).addEventListener('click', () => sportBlock(null));
+
+    $('#save-profile', root).addEventListener('click', () => {
+      const first = $('#b-first', root).value.trim();
+      const last = $('#b-last', root).value.trim();
+      if (!first) { toast('Add a first name to save.'); $('#b-first', root).focus(); return; }
+
+      const blocks = $$('.sport-block', root).map(readBlock);
+      if (!blocks.length) { toast('Add at least one sport.'); return; }
+
+      const sports = {};
+      blocks.forEach(b => { sports[b.key] = b.data; }); // last block wins if a sport is duplicated
+
+      const initials = ($('#b-init', root).value.trim()
+        || ((first[0] || '') + (last[0] || ''))).toUpperCase();
+
+      const athlete = {
+        id: 'me',
+        first, last,
+        age: +$('#b-age', root).value || 0,
+        grad: $('#b-grad', root).value.trim() || '',
+        city: $('#b-city', root).value.trim() || '',
+        state: $('#b-state', root).value.trim().toUpperCase() || '',
+        initials,
+        tagline: $('#b-tagline', root).value.trim() || `${first} is on Dub Profile.`,
+        sports,
+      };
+
+      saveMyAthlete(athlete);
+      $('#saved-msg', root).classList.add('show');
+      toast('Profile saved ✓');
+      setTimeout(() => { location.href = 'athlete.html?id=me'; }, 700);
+    });
+  }
+
   /* ---------- route ---------- */
   const page = document.body.dataset.page;
   if (page === 'athlete') renderAthlete();
   else if (page === 'sport') renderSport();
   else if (page === 'discover') renderDiscover();
+  else if (page === 'builder') renderBuilder();
 })();
