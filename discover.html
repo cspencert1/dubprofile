@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discover Athletes — Dub Profile for Coaches</title>
+  <meta name="description" content="Find youth athletes who are open to a new team. Filter by sport, level, location, and availability — then reach out." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="discover">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand" aria-label="Dub Profile home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" width="34" height="34"><rect width="36" height="36" rx="10" fill="url(#g)"/><path d="M7 11l3.2 14 3.6-9.4L17.4 25 20.6 11" fill="none" stroke="#07090f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="27.5" cy="13" r="2.4" fill="#07090f"/><defs><linearGradient id="g" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#ccff00"/><stop offset="1" stop-color="#9fd000"/></linearGradient></defs></svg></span>
+        <span class="brand-name">DUB<b>PROFILE</b></span>
+      </a>
+      <nav class="main-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+        <ul id="nav-menu" class="nav-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="athlete.html">Demo profile</a></li>
+          <li class="nav-cta-group"><a href="#" class="btn btn-ghost btn-sm">Coach log in</a><a href="#" class="btn btn-blue btn-sm">Coach sign up</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="container discover-head">
+      <span class="eyebrow" style="color:var(--blue)">Coach &amp; manager view</span>
+      <h1>Find your next <span class="grad-text">player.</span></h1>
+      <p class="section-sub" style="margin-top:12px">Search athletes by sport, level, location, and who's actually looking. Reach out one-by-one — or build a shortlist and message them all.</p>
+    </div>
+
+    <div class="container">
+      <div class="discover-layout">
+        <aside class="filters" aria-label="Filters">
+          <div class="filter-group">
+            <h4>Availability</h4>
+            <div class="chips" data-filter="status">
+              <span class="chip on" data-val="open">Open to Offers</span>
+              <span class="chip" data-val="radar">On the Radar</span>
+              <span class="chip" data-val="locked">Locked In</span>
+            </div>
+          </div>
+          <div class="filter-group">
+            <h4>Sport</h4>
+            <div class="chips" data-filter="sport" data-multi>
+              <span class="chip" data-val="baseball">⚾ Baseball</span>
+              <span class="chip" data-val="basketball">🏀 Basketball</span>
+              <span class="chip" data-val="soccer">⚽ Soccer</span>
+              <span class="chip" data-val="football">🏈 Football</span>
+              <span class="chip" data-val="volleyball">🏐 Volleyball</span>
+            </div>
+          </div>
+          <div class="filter-group">
+            <h4>Level</h4>
+            <div class="chips" data-filter="level" data-multi>
+              <span class="chip" data-val="Beginner">Beginner</span>
+              <span class="chip" data-val="Intermediate">Intermediate</span>
+              <span class="chip" data-val="Advanced">Advanced</span>
+            </div>
+          </div>
+          <div class="filter-group">
+            <h4>Max age: <b data-age-out>18</b></h4>
+            <input type="range" class="range-input" min="8" max="18" value="18" data-filter="age" />
+          </div>
+          <div class="filter-group">
+            <h4>Location</h4>
+            <input class="field" placeholder="City…" data-filter="city" />
+          </div>
+          <div class="filter-group">
+            <button class="btn btn-ghost btn-sm btn-block" data-reset>Reset filters</button>
+          </div>
+        </aside>
+
+        <section aria-label="Results">
+          <div class="discover-toolbar">
+            <div class="result-count"><b data-count>0</b> athletes match</div>
+            <button class="btn btn-ghost btn-sm" data-select-all>Select all</button>
+          </div>
+          <div class="recruit-grid" id="recruit-grid"></div>
+          <div class="empty" id="empty" hidden><div class="big">🔍</div><p>No athletes match those filters yet. Try widening your search.</p></div>
+
+          <div class="bulk-bar hidden" id="bulk-bar">
+            <span class="n"><b data-sel-count>0</b> selected</span>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" data-clear-sel>Clear</button>
+              <button class="btn btn-primary btn-sm" data-msg-all>Message selected</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-bottom" style="border:0;margin:0;padding-top:0;">
+      <p>&copy; <span data-year>2026</span> Dub Profile</p>
+      <a href="index.html" class="footer-social"><span>← Back home</span></a>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <button class="modal-close" data-close aria-label="Close">×</button>
+      <h3 id="modal-title">Reach out</h3>
+      <p data-modal-sub>Parents approve every connection before contact details are shared.</p>
+      <div class="seg-toggle" style="margin-bottom:4px">
+        <button class="on" data-channel="message">In-app message</button>
+        <button data-channel="text">Text invite</button>
+      </div>
+      <label for="m-from">Your name / club</label>
+      <input class="field" id="m-from" placeholder="Coach Rivera · Austin Thunder 14U" />
+      <label for="m-msg">Message</label>
+      <textarea class="field" id="m-msg" placeholder="We're hosting tryouts next weekend and would love to see you there…"></textarea>
+      <div style="margin-top:20px;display:flex;gap:10px;">
+        <button class="btn btn-outline" data-close>Cancel</button>
+        <button class="btn btn-primary" style="flex:1" data-send>Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
